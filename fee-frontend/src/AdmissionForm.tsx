@@ -10,6 +10,7 @@ interface AdmissionFormProps {
 export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const formRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [pdfDataUri, setPdfDataUri] = useState<string | null>(null);
   const [localPhoto, setLocalPhoto] = useState<string | null>(null);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,30 +98,13 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       const studentId = getField(['regNo', 'id', '_id']);
       const fileName = `Admission_Form_${collegeRollNo || studentId || 'Student'}.pdf`;
 
-      // On mobile, native downloads of large files via JS often fail or get blocked.
-      // The most reliable way is to open the PDF directly in the browser tab using a Blob URL,
-      // allowing the user to use their phone's native "Share" or "Save to Files" options.
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
       if (isMobile) {
-        const blob = pdf.output('blob');
-        const file = new File([blob], fileName, { type: 'application/pdf' });
-        
-        // Use modern Web Share API to bring up the native iOS/Android share sheet
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: fileName,
-            });
-          } catch (err) {
-            console.log('User cancelled share or share failed', err);
-            // Fallback to viewing in browser if share fails
-            window.location.href = URL.createObjectURL(blob);
-          }
-        } else {
-          // Fallback if Web Share API is not supported on this specific browser
-          window.location.href = URL.createObjectURL(blob);
-        }
+        // Generate a base64 data URI and save it to state
+        // This allows us to render a physical <a> tag for the user to tap, bypassing async popup blockers
+        const dataUri = pdf.output('datauristring');
+        setPdfDataUri(dataUri);
       } else {
         // Desktop browsers handle this perfectly
         pdf.save(fileName);
@@ -133,6 +117,47 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       setIsDownloading(false);
     }
   };
+
+  if (pdfDataUri) {
+      return (
+        <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+          <h2 style={{ color: 'var(--primary-color)', marginBottom: '1rem' }}>✅ PDF Generated Successfully!</h2>
+          <p style={{ marginBottom: '2rem', color: '#666' }}>Tap the button below to view or save your admission form.</p>
+          <a 
+            href={pdfDataUri} 
+            download={`Admission_Form_${collegeRollNo || 'Student'}.pdf`}
+            style={{
+              display: 'inline-block',
+              padding: '1rem 2rem',
+              backgroundColor: 'var(--primary-color)',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '8px',
+              fontWeight: 'bold',
+              fontSize: '1.1rem',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              marginBottom: '1rem'
+            }}
+          >
+            📄 Open / Save PDF
+          </a>
+          <br />
+          <button 
+            onClick={() => setPdfDataUri(null)}
+            style={{
+              marginTop: '1rem',
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-muted)',
+              textDecoration: 'underline',
+              cursor: 'pointer'
+            }}
+          >
+            Back to Form
+          </button>
+        </div>
+      );
+  }
 
   return (
     <div className="admission-form-container">
