@@ -103,8 +103,24 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       if (isMobile) {
         const blob = pdf.output('blob');
-        const blobUrl = URL.createObjectURL(blob);
-        window.location.href = blobUrl;
+        const file = new File([blob], fileName, { type: 'application/pdf' });
+        
+        // Use modern Web Share API to bring up the native iOS/Android share sheet
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: fileName,
+            });
+          } catch (err) {
+            console.log('User cancelled share or share failed', err);
+            // Fallback to viewing in browser if share fails
+            window.location.href = URL.createObjectURL(blob);
+          }
+        } else {
+          // Fallback if Web Share API is not supported on this specific browser
+          window.location.href = URL.createObjectURL(blob);
+        }
       } else {
         // Desktop browsers handle this perfectly
         pdf.save(fileName);
