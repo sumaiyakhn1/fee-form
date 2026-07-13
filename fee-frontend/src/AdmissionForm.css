@@ -1,0 +1,182 @@
+.admission-form-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  background: white;
+  color: black;
+  font-family: 'Times New Roman', Times, serif;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.print-area {
+  padding: 1rem;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.header-text {
+  text-align: center;
+  flex: 1;
+}
+
+.header-text h1 {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  color: black;
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+}
+
+.header-text h2 {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.photo-placeholder {
+  width: 100px;
+  height: 125px;
+  border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 11px;
+  color: #333;
+}
+
+.photo-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.underline {
+  border-bottom: 1px dotted black;
+  display: inline-block;
+  min-width: 100px;
+  font-weight: normal;
+  padding-bottom: 2px;
+}
+
+.underlineBlank {
+  border-bottom: 1px dotted black;
+  display: inline-block;
+  width: 150px;
+  height: 1.2em;
+}
+
+.small-text {
+  font-size: 12px;
+  align-self: center;
+}
+
+.checkbox-row label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.checkbox-row input {
+  margin: 0;
+  width: 14px;
+  height: 14px;
+  border: 1px solid black;
+}
+
+.declaration-section {
+  margin-top: 1.5rem;
+  font-size: 13px;
+}
+
+.declaration-section ol {
+  margin-top: 10px;
+  padding-left: 20px;
+}
+
+.declaration-section li {
+  margin-bottom: 6px;
+}
+
+.signature-section {
+  margin-top: 4rem;
+  text-align: right;
+  padding-right: 2rem;
+}
+
+.print-actions {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+  
+  html, body {
+    background: white !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  /* Reset parent containers that might restrict width or add backgrounds */
+  #root, .login-container, .dashboard-view, .expanded {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .admission-form-container, .admission-form-container * {
+    visibility: visible;
+  }
+
+  .admission-form-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: white !important;
+  }
+
+  .print-actions {
+    display: none !important;
+  }
+}
