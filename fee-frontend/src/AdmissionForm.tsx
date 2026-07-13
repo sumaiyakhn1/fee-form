@@ -97,21 +97,9 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       const studentId = getField(['regNo', 'id', '_id']);
       const fileName = `Admission_Form_${collegeRollNo || studentId || 'Student'}.pdf`;
 
-      // Fallback for mobile browsers
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
-        const blob = pdf.output('blob');
-        const blobUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(blobUrl);
-      } else {
-        pdf.save(fileName);
-      }
+      // Use jsPDF's built-in robust save mechanism for all devices
+      pdf.save(fileName);
+
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Failed to generate PDF. Please try again.');
