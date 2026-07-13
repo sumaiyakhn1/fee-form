@@ -71,9 +71,16 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
     
     try {
       setIsDownloading(true);
+
+      // Force update DOM attributes so html2canvas captures current input values
+      const inputs = formRef.current.querySelectorAll('input[type="text"]');
+      inputs.forEach((input: any) => {
+        input.setAttribute('value', input.value);
+      });
+
       const canvas = await html2canvas(formRef.current, {
-        scale: 2, // Higher quality
-        useCORS: true, // For remote images
+        scale: window.innerWidth < 768 ? 1.5 : 2, // slightly lower scale on mobile to prevent crashes
+        useCORS: true,
       });
       
       const imgData = canvas.toDataURL('image/png');
@@ -88,7 +95,23 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       const studentId = getField(['regNo', 'id', '_id']);
-      pdf.save(`Admission_Form_${collegeRollNo || studentId || 'Student'}.pdf`);
+      const fileName = `Admission_Form_${collegeRollNo || studentId || 'Student'}.pdf`;
+
+      // Fallback for mobile browsers
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        const blob = pdf.output('blob');
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      } else {
+        pdf.save(fileName);
+      }
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Failed to generate PDF. Please try again.');
@@ -128,74 +151,74 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
 
         {/* ACADEMIC DETAILS */}
         <div className="form-row">
-          <span><strong>Class in Which admission is sought</strong> <span className="underline">{className || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
-          <span style={{ marginLeft: 'auto' }}><strong>Semester</strong> <span className="underline">{semester || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
+          <span style={{ display: 'flex', flex: 2, alignItems: 'flex-end' }}><strong>Class in Which admission is sought</strong> <input type="text" className="editable-input" defaultValue={className} /></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end', marginLeft: 'auto' }}><strong>Semester</strong> <input type="text" className="editable-input" defaultValue={semester} /></span>
         </div>
 
         <div className="form-row">
-          <span><strong>College RollNo.</strong> <span className="underline">{collegeRollNo || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
-          <span><strong>University Roll No.</strong> <span className="underline">{uniRollNo || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
-          <span><strong>K.U. Reg. No.</strong> <span className="underline">{kuRegNo || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>College RollNo.</strong> <input type="text" className="editable-input" defaultValue={collegeRollNo} /></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>University Roll No.</strong> <input type="text" className="editable-input" defaultValue={uniRollNo} /></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>K.U. Reg. No.</strong> <input type="text" className="editable-input" defaultValue={kuRegNo} /></span>
         </div>
 
         <div className="form-row">
-          <span><strong>ABC ID No.</strong> <span className="underline">{abcId || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
-          <span className="small-text">(Only for 2nd Year Students)</span>
-          <span><strong>Name</strong> <span className="underline">{name || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
+          <span style={{ display: 'flex', flex: 1.5, alignItems: 'flex-end' }}><strong>ABC ID No.</strong> <input type="text" className="editable-input" defaultValue={abcId} /></span>
+          <span className="small-text" style={{ flex: 0.5, textAlign: 'center' }}>(Only for 2nd Year Students)</span>
+          <span style={{ display: 'flex', flex: 1.5, alignItems: 'flex-end' }}><strong>Name</strong> <input type="text" className="editable-input" defaultValue={name} /></span>
         </div>
 
         {/* PERSONAL DETAILS */}
         <div className="form-row">
           <span style={{flex: 1}}></span>
-          <span><strong>Family ID (PPP) :</strong> <span className="underline">{familyId || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
+          <span style={{ display: 'flex', flex: 2, alignItems: 'flex-end' }}><strong>Family ID (PPP) :</strong> <input type="text" className="editable-input" defaultValue={familyId} /></span>
         </div>
 
         <div className="form-row">
-          <span style={{flex: 1}}><strong>Father's Name</strong> <span className="underline">{fatherName || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
-          <span style={{flex: 1}}><strong>Mother's Name</strong> <span className="underline">{motherName || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Father's Name</strong> <input type="text" className="editable-input" defaultValue={fatherName} /></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Mother's Name</strong> <input type="text" className="editable-input" defaultValue={motherName} /></span>
         </div>
 
         <div className="form-row">
-          <span style={{flex: 1}}><strong>DOB</strong> <span className="underline">{dob || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
-          <span style={{flex: 1}}><strong>Gender</strong> <span className="underline">{gender || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>DOB</strong> <input type="text" className="editable-input" defaultValue={dob} /></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Gender</strong> <input type="text" className="editable-input" defaultValue={gender} /></span>
         </div>
 
         {/* DEMOGRAPHICS */}
         <div className="form-row checkbox-row">
           <span><strong>Whether belong to minority, if yes tick:</strong></span>
-          <label><input type="checkbox" checked={minority?.toLowerCase() === 'sikh'} readOnly /> Sikh</label>
-          <label><input type="checkbox" checked={minority?.toLowerCase() === 'jain'} readOnly /> Jain</label>
-          <label><input type="checkbox" checked={minority?.toLowerCase() === 'christian'} readOnly /> Christian</label>
-          <label><input type="checkbox" checked={minority?.toLowerCase() === 'muslim'} readOnly /> Muslim</label>
+          <label><input type="checkbox" defaultChecked={minority?.toLowerCase() === 'sikh'} /> Sikh</label>
+          <label><input type="checkbox" defaultChecked={minority?.toLowerCase() === 'jain'} /> Jain</label>
+          <label><input type="checkbox" defaultChecked={minority?.toLowerCase() === 'christian'} /> Christian</label>
+          <label><input type="checkbox" defaultChecked={minority?.toLowerCase() === 'muslim'} /> Muslim</label>
         </div>
 
         <div className="form-row checkbox-row">
           <span><strong>Category :</strong></span>
-          <label><input type="checkbox" checked={category?.toLowerCase() === 'gen' || category?.toLowerCase() === 'general'} readOnly /> Gen</label>
-          <label><input type="checkbox" checked={category?.toLowerCase() === 'obc'} readOnly /> OBC</label>
-          <label><input type="checkbox" checked={category?.toLowerCase() === 'sc'} readOnly /> SC</label>
-          <label><input type="checkbox" checked={category?.toLowerCase() === 'st'} readOnly /> ST</label>
-          <label><input type="checkbox" checked={category?.toLowerCase() === 'ewc' || category?.toLowerCase() === 'ews'} readOnly /> EWC</label>
-          <label><input type="checkbox" checked={category?.toLowerCase() === 'phw' || category?.toLowerCase() === 'ph'} readOnly /> PHW</label>
+          <label><input type="checkbox" defaultChecked={category?.toLowerCase() === 'gen' || category?.toLowerCase() === 'general'} /> Gen</label>
+          <label><input type="checkbox" defaultChecked={category?.toLowerCase() === 'obc'} /> OBC</label>
+          <label><input type="checkbox" defaultChecked={category?.toLowerCase() === 'sc'} /> SC</label>
+          <label><input type="checkbox" defaultChecked={category?.toLowerCase() === 'st'} /> ST</label>
+          <label><input type="checkbox" defaultChecked={category?.toLowerCase() === 'ewc' || category?.toLowerCase() === 'ews'} /> EWC</label>
+          <label><input type="checkbox" defaultChecked={category?.toLowerCase() === 'phw' || category?.toLowerCase() === 'ph'} /> PHW</label>
         </div>
 
         {/* CONTACT DETAILS */}
         <div className="form-row">
-          <span style={{flex: 1}}><strong>Home Address</strong> <span className="underline">{address || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Home Address</strong> <input type="text" className="editable-input" defaultValue={address} /></span>
         </div>
 
         <div className="form-row">
-          <span style={{flex: 1}}><strong>Mob. No. (Student ):</strong> <span className="underline">{studentMob || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
-          <span style={{flex: 1}}><strong>Mob. No. (Parents ):</strong> <span className="underline">{parentMob || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Mob. No. (Student ):</strong> <input type="text" className="editable-input" defaultValue={studentMob} /></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Mob. No. (Parents ):</strong> <input type="text" className="editable-input" defaultValue={parentMob} /></span>
         </div>
 
         <div className="form-row">
-          <span style={{flex: 1}}><strong>E-Mail ID.</strong> <span className="underline">{email || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>E-Mail ID.</strong> <input type="text" className="editable-input" defaultValue={email} /></span>
         </div>
 
         <div className="form-row">
-          <span style={{flex: 1}}><strong>Aadhar No.</strong> <span className="underline">{aadhar || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
-          <span style={{flex: 1}}><strong>Voter ID No.:</strong> <span className="underline">{voterId || '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}</span></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Aadhar No.</strong> <input type="text" className="editable-input" defaultValue={aadhar} /></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Voter ID No.:</strong> <input type="text" className="editable-input" defaultValue={voterId} /></span>
         </div>
 
         {/* SUBJECTS */}
@@ -204,20 +227,20 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
         </div>
         
         <div className="form-row">
-          <span style={{flex: 1}}><strong>Major: Sub 1</strong> <span className="underlineBlank"></span></span>
-          <span style={{flex: 1}}><strong>Sub 2</strong> <span className="underlineBlank"></span></span>
-          <span style={{flex: 1}}><strong>Sub 3</strong> <span className="underlineBlank"></span></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Major: Sub 1</strong> <input type="text" className="editable-input" /></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Sub 2</strong> <input type="text" className="editable-input" /></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Sub 3</strong> <input type="text" className="editable-input" /></span>
         </div>
 
         <div className="form-row">
-          <span style={{flex: 1}}><strong>Minor: Sub 4</strong> <span className="underlineBlank"></span></span>
-          <span style={{flex: 1}}><strong>AEC</strong> <span className="underlineBlank"></span></span>
-          <span style={{flex: 1}}><strong>VAC</strong> <span className="underlineBlank"></span></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Minor: Sub 4</strong> <input type="text" className="editable-input" /></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>AEC</strong> <input type="text" className="editable-input" /></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>VAC</strong> <input type="text" className="editable-input" /></span>
         </div>
 
         <div className="form-row">
-          <span style={{flex: 1, paddingLeft: '3rem'}}><strong>SEC</strong> <span className="underlineBlank" style={{width: '60%'}}></span></span>
-          <span style={{flex: 2}}><strong>MDC</strong> <span className="underlineBlank" style={{width: '60%'}}></span></span>
+          <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end', paddingLeft: '3rem' }}><strong>SEC</strong> <input type="text" className="editable-input" /></span>
+          <span style={{ display: 'flex', flex: 2, alignItems: 'flex-end' }}><strong>MDC</strong> <input type="text" className="editable-input" /></span>
         </div>
 
         {/* DECLARATION */}

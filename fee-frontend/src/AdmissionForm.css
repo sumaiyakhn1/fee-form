@@ -69,19 +69,29 @@
   font-size: 14px;
 }
 
-.underline {
+.editable-input {
+  border: none;
   border-bottom: 1px dotted black;
-  display: inline-block;
-  min-width: 100px;
-  font-weight: normal;
-  padding-bottom: 2px;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  padding: 2px 5px;
+  margin-left: 5px;
+  outline: none;
+  flex: 1;
+  min-width: 50px;
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  touch-action: manipulation;
+  z-index: 10;
+  position: relative;
 }
 
-.underlineBlank {
-  border-bottom: 1px dotted black;
-  display: inline-block;
-  width: 150px;
-  height: 1.2em;
+.editable-input:focus {
+  border-bottom: 1px solid var(--primary-color, blue);
+  background-color: rgba(16, 185, 129, 0.05);
 }
 
 .small-text {
