@@ -10,7 +10,7 @@ interface AdmissionFormProps {
 export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const formRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [pdfDataUri, setPdfDataUri] = useState<string | null>(null);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [localPhoto, setLocalPhoto] = useState<string | null>(null);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,31 +82,49 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       const canvas = await html2canvas(formRef.current, {
         scale: window.innerWidth < 768 ? 1.5 : 2, // slightly lower scale on mobile to prevent crashes
         useCORS: true,
+        windowWidth: 794, // Force desktop width so media queries don't trigger mobile layout
+        onclone: (clonedDoc) => {
+          // Force the cloned print area to strictly match A4 paper dimensions (96 DPI: 794x1123)
+          const el = clonedDoc.querySelector('.print-area') as HTMLElement;
+          if (el) {
+            el.style.width = '794px';
+            el.style.minHeight = '1123px';
+            el.style.padding = '40px';
+            el.style.backgroundColor = 'white';
+            el.style.margin = '0';
+            el.style.boxSizing = 'border-box';
+            
+            // Ensure inputs look correct
+            const inputs = el.querySelectorAll('input[type="text"]');
+            inputs.forEach((input: any) => {
+               input.style.border = 'none';
+               input.style.borderBottom = '1px dotted black';
+               input.style.backgroundColor = 'transparent';
+            });
+          }
+        }
       });
       
       const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      const studentId = getField(['regNo', 'id', '_id']);
-      const fileName = `Admission_Form_${collegeRollNo || studentId || 'Student'}.pdf`;
-
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       
       if (isMobile) {
-        // Generate a base64 data URI and save it to state
-        // This allows us to render a physical <a> tag for the user to tap, bypassing async popup blockers
-        const dataUri = pdf.output('datauristring');
-        setPdfDataUri(dataUri);
+        // WebView workaround: Just display the image on screen so they can long-press to save it
+        setGeneratedImage(imgData);
       } else {
-        // Desktop browsers handle this perfectly
+        // Desktop browsers handle PDF generation perfectly
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+        
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        const studentId = getField(['regNo', 'id', '_id']);
+        const fileName = `Admission_Form_${collegeRollNo || studentId || 'Student'}.pdf`;
         pdf.save(fileName);
       }
 
@@ -118,40 +136,25 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
     }
   };
 
-  if (pdfDataUri) {
+  if (generatedImage) {
       return (
-        <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ color: 'var(--primary-color)', marginBottom: '1rem' }}>✅ PDF Generated Successfully!</h2>
-          <p style={{ marginBottom: '2rem', color: '#666' }}>Tap the button below to view or save your admission form.</p>
-          <a 
-            href={pdfDataUri} 
-            download={`Admission_Form_${collegeRollNo || 'Student'}.pdf`}
-            style={{
-              display: 'inline-block',
-              padding: '1rem 2rem',
-              backgroundColor: 'var(--primary-color)',
-              color: 'white',
-              textDecoration: 'none',
-              borderRadius: '8px',
-              fontWeight: 'bold',
-              fontSize: '1.1rem',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-              marginBottom: '1rem'
-            }}
-          >
-            📄 Open / Save PDF
-          </a>
+        <div style={{ textAlign: 'center', padding: '1rem', background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+          <h2 style={{ color: 'var(--primary-color)', marginBottom: '0.5rem' }}>✅ Form Ready!</h2>
+          <p style={{ marginBottom: '1.5rem', color: '#e63946', fontWeight: 'bold', fontSize: '1.1rem' }}>
+            👇 Long-press the image below and select "Save Image" to download it.
+          </p>
+          <div style={{ border: '2px solid var(--primary-color)', padding: '5px', display: 'inline-block', borderRadius: '8px', maxWidth: '100%' }}>
+            <img 
+              src={generatedImage} 
+              alt="Admission Form" 
+              style={{ width: '100%', maxWidth: '800px', display: 'block' }} 
+            />
+          </div>
           <br />
           <button 
-            onClick={() => setPdfDataUri(null)}
-            style={{
-              marginTop: '1rem',
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-muted)',
-              textDecoration: 'underline',
-              cursor: 'pointer'
-            }}
+            className="form-button"
+            onClick={() => setGeneratedImage(null)}
+            style={{ marginTop: '2rem', maxWidth: '300px', margin: '2rem auto 0 auto' }}
           >
             Back to Form
           </button>
