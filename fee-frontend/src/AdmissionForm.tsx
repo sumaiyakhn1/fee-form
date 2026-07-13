@@ -66,6 +66,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const voterId = getField(['voterId', 'voterIdNo']);
   const className = getField(['course', 'stream', 'courseName', 'class']);
   const semester = getField(['batch', 'semester', 'sem']);
+  const photo = getField(['photoUrl', 'photo', 'image', 'profilePic', 'studentPhoto', 'profile_image', 'avatar']);
 
   const downloadPDF = async () => {
     if (!formRef.current) return;
@@ -111,6 +112,8 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       if (isMobile) {
         // WebView workaround: Just display the image on screen so they can long-press to save it
         setGeneratedImage(imgData);
+        // Automatically pop up the print interface as a convenience
+        setTimeout(() => window.print(), 500);
       } else {
         // Desktop browsers handle PDF generation perfectly
         const pdf = new jsPDF({
@@ -138,11 +141,38 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
 
   if (generatedImage) {
       return (
+        <div className="admission-form-container">
+        
         <div style={{ textAlign: 'center', padding: '1rem', background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
           <h2 style={{ color: 'var(--primary-color)', marginBottom: '0.5rem' }}>✅ Form Ready!</h2>
-          <p style={{ marginBottom: '1.5rem', color: '#e63946', fontWeight: 'bold', fontSize: '1.1rem' }}>
-            👇 Long-press the image below and select "Save Image" to download it.
+          <p style={{ marginBottom: '0.5rem', color: '#e63946', fontWeight: 'bold', fontSize: '1.1rem' }}>
+            📱 App Restrictions Detected!
           </p>
+          <p style={{ marginBottom: '1.5rem', color: '#333', fontSize: '0.95rem' }}>
+            Your student app is blocking background downloads. You can <strong>take a screenshot</strong> of the form below, OR use the print interface to save as PDF.
+          </p>
+
+          <button 
+            type="button"
+            className="form-button"
+            onClick={() => window.print()}
+            style={{ marginBottom: '1rem', backgroundColor: '#10b981', maxWidth: '300px', margin: '0 auto 1rem auto', display: 'block' }}
+          >
+            🖨️ Download PDF (via Print)
+          </button>
+
+          <button 
+            type="button"
+            className="form-button"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              alert('Link copied! Open Chrome or Safari and paste this link to download your form normally.');
+            }}
+            style={{ marginBottom: '2rem', backgroundColor: '#3b82f6', maxWidth: '300px', margin: '0 auto 2rem auto', display: 'block' }}
+          >
+            📋 Copy Link for Chrome/Safari
+          </button>
+
           <div style={{ border: '2px solid var(--primary-color)', padding: '5px', display: 'inline-block', borderRadius: '8px', maxWidth: '100%' }}>
             <img 
               src={generatedImage} 
@@ -152,12 +182,21 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
           </div>
           <br />
           <button 
+            type="button"
             className="form-button"
             onClick={() => setGeneratedImage(null)}
-            style={{ marginTop: '2rem', maxWidth: '300px', margin: '2rem auto 0 auto' }}
+            style={{ marginTop: '2rem', maxWidth: '300px', margin: '2rem auto 0 auto', display: 'block' }}
           >
             Back to Form
           </button>
+        </div>
+        
+        {/* Render the original form invisibly so window.print() still captures the high-quality layout */}
+        <div style={{ position: 'absolute', top: 0, left: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
+          <div className="print-area" ref={formRef} style={{ backgroundColor: 'white', padding: '20px' }}>
+            {/* ... Form will be rendered here for print only ... */}
+          </div>
+        </div>
         </div>
       );
   }
@@ -172,16 +211,15 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
             <h1>R.K.S.D. COLLEGE, KAITHAL</h1>
             <h2>(2026-27)</h2>
           </div>
-          <div className="photo-placeholder" style={{ position: 'relative', overflow: 'hidden' }}>
-            <label style={{ cursor: 'pointer', display: 'block', width: '100%', height: '100%', margin: 0 }}>
+          <div className="photo-placeholder" style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'transparent' }}>
+            {localPhoto ? (
+              <img src={localPhoto} alt="Student" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }} />
+            ) : photo ? (
+              <img src={photo} alt="Student" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }} crossOrigin="anonymous" />
+            ) : null}
+            <label style={{ cursor: 'pointer', display: 'block', width: '100%', height: '100%', margin: 0, position: 'relative', zIndex: 1, backgroundColor: (localPhoto || photo) ? 'transparent' : 'white' }}>
               <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
-              {localPhoto || getField(['photoUrl', 'photo', 'image', 'profilePic', 'studentPhoto', 'profile_image', 'avatar']) ? (
-                <img 
-                  src={localPhoto || getField(['photoUrl', 'photo', 'image', 'profilePic', 'studentPhoto', 'profile_image', 'avatar'])} 
-                  alt="Student" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
-              ) : (
+              {!localPhoto && !photo && (
                 <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   Affix Passport<br/>Size Photo
                   <small style={{ marginTop: '5px', fontSize: '10px', color: '#666' }}>(Click to attach)</small>
@@ -305,10 +343,11 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       </div>
 
       <div className="print-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-        <button className="form-button" onClick={() => window.print()} disabled={isDownloading}>
+        <button type="button" className="form-button" onClick={() => window.print()} disabled={isDownloading}>
           Print Form
         </button>
         <button 
+          type="button"
           className="form-button" 
           onClick={downloadPDF} 
           disabled={isDownloading}
