@@ -97,8 +97,18 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       const studentId = getField(['regNo', 'id', '_id']);
       const fileName = `Admission_Form_${collegeRollNo || studentId || 'Student'}.pdf`;
 
-      // Use jsPDF's built-in robust save mechanism for all devices
-      pdf.save(fileName);
+      // On mobile, native downloads of large files via JS often fail or get blocked.
+      // The most reliable way is to open the PDF directly in the browser tab using a Blob URL,
+      // allowing the user to use their phone's native "Share" or "Save to Files" options.
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        const blob = pdf.output('blob');
+        const blobUrl = URL.createObjectURL(blob);
+        window.location.href = blobUrl;
+      } else {
+        // Desktop browsers handle this perfectly
+        pdf.save(fileName);
+      }
 
     } catch (error) {
       console.error('Error generating PDF:', error);
