@@ -102,14 +102,18 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       
       setTimeout(() => {
         setIsDownloading(false);
-        alert('If nothing happened, please tap the 3 dots (...) menu at the top right and select "Open in Chrome" or "Open in Browser" to print safely.');
-      }, 1500);
+        const newWin = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        if (!newWin) {
+          window.print(); // ultimate fallback
+        }
+      }, 1000);
     } else {
       const newWin = window.open(targetUrl, '_blank', 'noopener,noreferrer');
-      if (!newWin) {
-        alert('Popup blocked! Please tap the menu (3 dots or share icon) and select "Open in Safari" or "Open in System Browser" to print safely.');
-      }
       setIsDownloading(false);
+      if (!newWin) {
+        // If popup was blocked on iOS, just trigger print on the current page as a fallback!
+        window.print();
+      }
     }
   };
 
