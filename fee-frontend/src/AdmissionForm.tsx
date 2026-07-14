@@ -81,40 +81,10 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
 
   const printForm = async () => {
     setIsDownloading(true);
-    const url = new URL(window.location.href);
-    
-    // If we are already in the autoPrint tab, just print directly
-    if (url.searchParams.get('autoPrint') === 'true' || !(/android/i.test(navigator.userAgent) || /wv|instagram|fbav|fban|line|snapchat/i.test(navigator.userAgent))) {
+    setTimeout(() => {
       window.print();
       setIsDownloading(false);
-      return;
-    }
-
-    url.searchParams.set('autoPrint', 'true');
-    const targetUrl = url.toString();
-
-    // Escape to external browser
-    if (/android/i.test(navigator.userAgent)) {
-      const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
-      const scheme = url.protocol.replace(':', '');
-      const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=${scheme};package=com.android.chrome;end;`;
-      window.location.href = intentUrl;
-      
-      setTimeout(() => {
-        setIsDownloading(false);
-        const newWin = window.open(targetUrl, '_blank', 'noopener,noreferrer');
-        if (!newWin) {
-          window.print(); // ultimate fallback
-        }
-      }, 1000);
-    } else {
-      const newWin = window.open(targetUrl, '_blank', 'noopener,noreferrer');
-      setIsDownloading(false);
-      if (!newWin) {
-        // If popup was blocked on iOS, just trigger print on the current page as a fallback!
-        window.print();
-      }
-    }
+    }, 500);
   };
 
   if (generatedImage) {

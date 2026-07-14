@@ -195,7 +195,70 @@ function App() {
               <div style={{ textAlign: 'center', fontWeight: 'bold', color: 'var(--success-color)', marginBottom: '1rem' }}>
                 ✅ You have no pending dues!
               </div>
-              <AdmissionForm studentData={studentData} />
+              
+              {new URLSearchParams(window.location.search).get('viewForm') === 'true' ? (
+                <AdmissionForm studentData={studentData} />
+              ) : (
+                <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', textAlign: 'center' }}>
+                  <h4 style={{ color: 'var(--primary-color)', marginBottom: '1rem' }}>Ready to fill Admission Form</h4>
+                  <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '1.5rem' }}>
+                    To ensure your photo and data are saved safely when printing, please open the form in your system browser (Chrome/Safari).
+                  </p>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <button 
+                      type="button"
+                      className="form-button"
+                      onClick={() => {
+                        const targetUrl = new URL(window.location.href);
+                        targetUrl.searchParams.set('regNo', regNo);
+                        targetUrl.searchParams.set('viewForm', 'true');
+                        const urlStr = targetUrl.toString();
+
+                        if (/android/i.test(navigator.userAgent)) {
+                          const urlWithoutScheme = urlStr.replace(/^https?:\/\//i, '');
+                          const scheme = targetUrl.protocol.replace(':', '');
+                          window.location.href = `intent://${urlWithoutScheme}#Intent;scheme=${scheme};package=com.android.chrome;end;`;
+                          setTimeout(() => { window.open(urlStr, '_blank'); }, 1000);
+                        } else {
+                          window.open(urlStr, '_blank');
+                        }
+                      }}
+                    >
+                      🌐 Open in External Browser
+                    </button>
+                    
+                    <button 
+                      type="button"
+                      className="form-button"
+                      style={{ background: 'transparent', border: '2px solid var(--primary-color)', color: 'var(--primary-color)' }}
+                      onClick={() => {
+                        const targetUrl = new URL(window.location.href);
+                        targetUrl.searchParams.set('regNo', regNo);
+                        targetUrl.searchParams.set('viewForm', 'true');
+                        navigator.clipboard.writeText(targetUrl.toString());
+                        alert('URL Copied! Please paste it in Chrome or Safari to continue.');
+                      }}
+                    >
+                      📋 Copy URL to open manually
+                    </button>
+                    
+                    <button 
+                      type="button"
+                      className="form-button"
+                      style={{ background: 'transparent', border: 'none', color: '#888', textDecoration: 'underline', fontSize: '0.8rem', marginTop: '0.5rem' }}
+                      onClick={() => {
+                        const targetUrl = new URL(window.location.href);
+                        targetUrl.searchParams.set('regNo', regNo);
+                        targetUrl.searchParams.set('viewForm', 'true');
+                        window.location.href = targetUrl.toString();
+                      }}
+                    >
+                      Continue here anyway (Not Recommended)
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ marginTop: '1rem', textAlign: 'center', fontWeight: 'bold', color: 'var(--error-color)' }}>
