@@ -1,0 +1,89 @@
+<style>
+    @media print {
+        .page-break {
+            page-break-before: always;
+        }
+    }
+</style>
+<section style="font-weight: 500;" class="container card">
+    <ng-container *ngFor="let displayData of displayDataArray; let i = index">
+        <div [ngClass]="{ 'page-break': i !== 0 }">
+            <div class="row mt10 d-flex align-items-center">
+                <div class="col-2">
+                    <img [src]="displayData.logo" alt="Logo" style="width: 100px; height: 100px;">
+                </div>
+                <div class="col-10 text-center">
+                    <h2>{{displayData.entityDisplayName}}</h2>
+                    <h5>{{displayData.entityAddress}}, {{displayData.entityCity}}, {{displayData.entityState}},
+                        {{displayData.entityPin}}</h5>
+                    <h5>{{displayData.entityReceptionNumber}}, {{displayData.entityContactEmail}}</h5>
+                    <br>
+                    <h5>Ledger of {{displayData.studentName}} ({{displayData.studentRegNo}})
+                        {{displayData.studentCourse}} - {{displayData.studentStream}}</h5>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Session Ledger Tables -->
+        <div style="font-size: large; font-weight: 400;" class="row mt20" *ngFor="let row of displayData.grpupHeadWiseLedger">
+            
+            Session : {{row.session}}
+
+            <table class="table table-bordered fontFamily mt3p">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Date</th>
+                        <th rowspan="2">Narration</th>
+                        <th rowspan="2">Debit</th>
+                        <th colspan="2" style="text-align:center;vertical-align:middle;">Credit</th>
+                        <th rowspan="2">Balance</th>
+                    </tr>
+                    <tr>
+                        <th>Concession</th>
+                        <th>Payment</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <!-- Transactions -->
+                    <ng-container *ngFor="let data of row.groupsByDateInstallmentType">
+                        <tr *ngFor="let item of data.groups">
+                            <td>{{ data.date | date:'dd/MMM/yyyy' }}</td>
+                            <td>
+                                <span *ngIf="data.type === 'Concession'">Concession - {{ item.groupName }}</span>
+                                <span *ngIf="data.type !== 'Concession'">{{ item.groupName }}</span>
+                            </td>
+                            <td>{{ item.totalDebit }}</td>
+                            <td>
+                                <span *ngIf="data.type === 'Concession'">{{ item.totalCredit }}</span>
+                                <span *ngIf="data.type !== 'Concession'">0</span>
+                            </td>
+                            <td>
+                                <span *ngIf="data.type === 'Payment'">{{ item.totalCredit }}</span>
+                                <span *ngIf="data.type !== 'Payment'">0</span>
+                            </td>
+                            <td>{{ item.finalBalance }}</td>
+                        </tr>
+                    </ng-container>
+
+                    <!-- Total Row (Matching on exact session or normalized dashes) -->
+                    <ng-container *ngFor="let row2 of displayData.studentLedger">
+                        <!-- We check if the sessions match (handling possible en-dash vs hyphen differences) -->
+                        <ng-container *ngIf="row.session === row2.session || row.session === row2.session.replace('-', '–') || row.session.replace('–', '-') === row2.session">
+                            <ng-container *ngFor="let data2 of row2.ledgerData">
+                                <tr *ngIf="data2.name === 'Total'">
+                                    <td><b>Total</b></td>
+                                    <td></td>
+                                    <td><b>{{ data2.debit }}</b></td>
+                                    <td colspan="2" style="text-align:center;"><b>{{ data2.credit }}</b></td>
+                                    <td><b>{{ data2.balance }}</b></td>
+                                </tr>
+                            </ng-container>
+                        </ng-container>
+                    </ng-container>
+
+                </tbody>
+            </table>
+        </div>
+    </ng-container>
+</section>

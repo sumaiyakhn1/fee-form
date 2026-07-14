@@ -15,8 +15,16 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
     const params = new URLSearchParams(window.location.search);
     if (params.get('autoPrint') === 'true') {
       // Remove autoPrint from URL so it doesn't print repeatedly on refresh
-      window.history.replaceState({}, '', window.location.pathname + '?regNo=' + params.get('regNo'));
+      const regNo = params.get('regNo');
+      window.history.replaceState({}, '', window.location.pathname + (regNo ? '?regNo=' + regNo : ''));
       setTimeout(() => {
+        if (regNo) {
+          fetch('http://localhost:3001/api/log-download', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ regNo })
+          }).catch(console.error);
+        }
         window.print();
       }, 1500); // Give images a moment to load in the new browser tab
     }
@@ -45,7 +53,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const fatherName = getField(['fatherName', 'fathersName', 'parentName']);
   const motherNameRaw = getField(['motherName', 'mothersName']);
   const motherName = motherNameRaw?.toLowerCase() === 'na' ? '' : motherNameRaw;
-  
+
   let dob = getField(['dob', 'dateOfBirth']);
   if (dob) {
     const date = new Date(dob);
@@ -62,7 +70,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const familyId = getField(['familyId', 'ppp']);
   const category = getField(['socialCategory', 'category', 'casteCategory']);
   const minority = getField(['religion', 'minority']);
-  
+
   const addressRaw = getField(['address', 'homeAddress', 'permanentAddress']);
   const city = getField(['city']);
   const state = getField(['state']);
@@ -78,21 +86,36 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const semester = '';
   const photo = getField(['photoUrl', 'photo', 'image', 'profilePic', 'studentPhoto', 'profile_image', 'avatar', 'studentProfilePic', 'studentImage', 'profileImage', 'picture']);
 
+  const logDownload = async () => {
+    if (!collegeRollNo) return;
+    try {
+      await fetch('http://localhost:3001/api/log-download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ regNo: collegeRollNo })
+      });
+    } catch (err) {
+      console.error('Failed to log download', err);
+    }
+  };
+
   const printForm = async () => {
+    await logDownload();
     window.print();
   };
 
   if (generatedImage) {
-      return (
-        <div className="admission-form-container">
-        
+    return (
+      <div className="admission-form-container">
+
         <div style={{ textAlign: 'center', padding: '1rem', background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
           <h2 style={{ color: 'var(--primary-color)', marginBottom: '1.5rem' }}>✅ Form Ready!</h2>
 
-          <button 
+          <button
             type="button"
             className="form-button"
             onClick={() => {
+              logDownload();
               const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
               const pdfWidth = pdf.internal.pageSize.getWidth();
               const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -104,7 +127,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
             🖨️ Download PDF
           </button>
 
-          <button 
+          <button
             type="button"
             className="form-button"
             onClick={() => {
@@ -117,14 +140,14 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
           </button>
 
           <div style={{ border: '2px solid var(--primary-color)', padding: '5px', display: 'inline-block', borderRadius: '8px', maxWidth: '100%' }}>
-            <img 
-              src={generatedImage} 
-              alt="Admission Form" 
-              style={{ width: '100%', maxWidth: '800px', display: 'block' }} 
+            <img
+              src={generatedImage}
+              alt="Admission Form"
+              style={{ width: '100%', maxWidth: '800px', display: 'block' }}
             />
           </div>
           <br />
-          <button 
+          <button
             type="button"
             className="form-button"
             onClick={() => setGeneratedImage(null)}
@@ -133,21 +156,21 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
             Back to Form
           </button>
         </div>
-        
+
         {/* Render the original form invisibly so window.print() still captures the high-quality layout */}
         <div style={{ position: 'absolute', top: 0, left: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
           <div className="print-area" ref={formRef} style={{ backgroundColor: 'white', padding: '20px' }}>
             {/* ... Form will be rendered here for print only ... */}
           </div>
         </div>
-        </div>
-      );
+      </div>
+    );
   }
 
   return (
     <div className="admission-form-container">
       <div className="print-area" ref={formRef} style={{ backgroundColor: 'white', padding: '20px' }}>
-        
+
         {/* HEADER */}
         <div className="form-header">
           <div className="header-text">
@@ -163,7 +186,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
                 <img src={photo} alt="Student" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               ) : (
                 <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: 'white' }}>
-                  Affix Passport<br/>Size Photo
+                  Affix Passport<br />Size Photo
                   <small style={{ marginTop: '5px', fontSize: '10px', color: '#666' }}>(Click to attach)</small>
                 </span>
               )}
@@ -191,7 +214,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
 
         {/* PERSONAL DETAILS */}
         <div className="form-row">
-          <span style={{flex: 1}}></span>
+          <span style={{ flex: 1 }}></span>
           <span style={{ display: 'flex', flex: 2, alignItems: 'flex-end' }}><strong>Family ID (PPP) :</strong> <input type="text" className="editable-input" defaultValue={familyId} /></span>
         </div>
 
@@ -247,7 +270,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
         <div className="form-row" style={{ marginTop: '1rem' }}>
           <strong>Subjects Opted:</strong>
         </div>
-        
+
         <div className="form-row">
           <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Major: Sub 1</strong> <input type="text" className="editable-input" /></span>
           <span style={{ display: 'flex', flex: 1, alignItems: 'flex-end' }}><strong>Sub 2</strong> <input type="text" className="editable-input" /></span>
@@ -285,10 +308,10 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       </div>
 
       <div className="print-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-        <button 
-          type="button" 
-          className="form-button" 
-          onClick={printForm} 
+        <button
+          type="button"
+          className="form-button"
+          onClick={printForm}
         >
           Print Form
         </button>
