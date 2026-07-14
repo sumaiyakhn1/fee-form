@@ -206,27 +206,30 @@ function App() {
                   </p>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <button 
-                      type="button"
-                      className="form-button"
-                      onClick={() => {
-                        const targetUrl = new URL(window.location.href);
-                        targetUrl.searchParams.set('regNo', regNo);
-                        targetUrl.searchParams.set('viewForm', 'true');
-                        const urlStr = targetUrl.toString();
+                    {(() => {
+                      const targetUrl = new URL(window.location.href);
+                      targetUrl.searchParams.set('regNo', regNo);
+                      targetUrl.searchParams.set('viewForm', 'true');
+                      const urlStr = targetUrl.toString();
 
-                        if (/android/i.test(navigator.userAgent)) {
-                          const urlWithoutScheme = urlStr.replace(/^https?:\/\//i, '');
-                          const scheme = targetUrl.protocol.replace(':', '');
-                          window.location.href = `intent://${urlWithoutScheme}#Intent;scheme=${scheme};package=com.android.chrome;end;`;
-                          setTimeout(() => { window.open(urlStr, '_blank'); }, 1000);
-                        } else {
-                          window.open(urlStr, '_blank');
-                        }
-                      }}
-                    >
-                      🌐 Open in External Browser
-                    </button>
+                      const isAndroid = /android/i.test(navigator.userAgent);
+                      const urlWithoutScheme = urlStr.replace(/^https?:\/\//i, '');
+                      const scheme = targetUrl.protocol.replace(':', '');
+                      // Use S.browser_fallback_url so Android automatically handles the fallback internally without JS!
+                      const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=${scheme};package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(urlStr)};end;`;
+
+                      return (
+                        <a 
+                          href={isAndroid ? intentUrl : urlStr}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="form-button"
+                          style={{ display: 'inline-block', textDecoration: 'none', boxSizing: 'border-box', lineHeight: 'normal' }}
+                        >
+                          🌐 Open in External Browser
+                        </a>
+                      );
+                    })()}
                     
                     <button 
                       type="button"
