@@ -105,17 +105,19 @@ function App() {
       url.searchParams.set('regNo', regNo);
       const targetUrl = url.toString();
 
-      // The exact logic that worked perfectly in AdmissionForm
+      // Always escape to external browser
       if (/android/i.test(navigator.userAgent)) {
         const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
-        const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.android.chrome;end;`;
+        const scheme = url.protocol.replace(':', '');
+        const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=${scheme};package=com.android.chrome;end;`;
         window.location.href = intentUrl;
         
-        setTimeout(() => {
-          window.open(targetUrl, '_blank', 'noopener,noreferrer');
-        }, 1000);
+        // No window.open fallback here because WebViews treat window.open as a local navigation, causing the "looping" bug.
       } else {
-        window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        const newWin = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        if (!newWin) {
+          alert('Popup blocked! Please tap the menu (3 dots or share icon) and select "Open in Safari" or "Open in System Browser" to continue safely.');
+        }
       }
     }
   };

@@ -96,15 +96,15 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
     // Escape to external browser
     if (/android/i.test(navigator.userAgent)) {
       const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
-      const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.android.chrome;end;`;
+      const scheme = url.protocol.replace(':', '');
+      const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=${scheme};package=com.android.chrome;end;`;
       window.location.href = intentUrl;
-      
-      setTimeout(() => {
-        window.open(targetUrl, '_blank', 'noopener,noreferrer');
-        setIsDownloading(false);
-      }, 1000);
+      setIsDownloading(false);
     } else {
-      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      const newWin = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      if (!newWin) {
+        alert('Popup blocked! Please tap the menu (3 dots or share icon) and select "Open in Safari" or "Open in System Browser" to print safely.');
+      }
       setIsDownloading(false);
     }
   };
