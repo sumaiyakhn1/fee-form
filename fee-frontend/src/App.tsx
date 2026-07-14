@@ -103,30 +103,19 @@ function App() {
       url.searchParams.set('regNo', regNo);
       const targetUrl = url.toString();
 
-      // Detect in-app browsers (WebViews, Instagram, Facebook, etc.)
-      const isWebView = /wv|instagram|fbav|fban|line|snapchat/i.test(navigator.userAgent) || 
-                        /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(navigator.userAgent) ||
-                        /(android).*version\/[\d.]+.*safari/i.test(navigator.userAgent);
-
-      // If we are in a WebView, escape to external browser BEFORE entering the dashboard
-      if (isWebView) {
-        if (/android/i.test(navigator.userAgent)) {
-          const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
-          const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.android.chrome;end;`;
-          window.location.href = intentUrl;
-          
-          // Fallback if intent fails
-          setTimeout(() => {
-            window.open(targetUrl, '_blank', 'noopener,noreferrer');
-          }, 1000);
-        } else {
+      // Always escape to external browser BEFORE entering the dashboard
+      if (/android/i.test(navigator.userAgent)) {
+        const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
+        const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.android.chrome;end;`;
+        window.location.href = intentUrl;
+        
+        // Fallback if intent fails
+        setTimeout(() => {
           window.open(targetUrl, '_blank', 'noopener,noreferrer');
-        }
-        return; // Stop execution in WebView
+        }, 1000);
+      } else {
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
       }
-
-      // Normal execution if in a regular browser
-      fetchData(regNo);
     }
   };
 
