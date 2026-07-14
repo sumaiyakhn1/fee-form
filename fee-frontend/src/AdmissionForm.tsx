@@ -45,9 +45,9 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   }
 
   const gender = getField(['gender', 'sex']);
-  const collegeRollNo = getField(['collegeRollNo', 'rollNo']);
-  const uniRollNo = getField(['uniRollNo', 'universityRollNo']);
-  const kuRegNo = getField(['regNo', 'kuRegNo', 'registrationNo']);
+  const collegeRollNo = getField(['regNo']);
+  const uniRollNo = '';
+  const kuRegNo = '';
   const abcId = getField(['abcId', 'abcIdNo']);
   const familyId = getField(['familyId', 'ppp']);
   const category = getField(['socialCategory', 'category', 'casteCategory']);
@@ -65,8 +65,8 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const aadhar = getField(['uid', 'aadhar', 'aadharNo']);
   const voterId = getField(['voterId', 'voterIdNo']);
   const className = getField(['course', 'stream', 'courseName', 'class']);
-  const semester = getField(['batch', 'semester', 'sem']);
-  const photo = getField(['photoUrl', 'photo', 'image', 'profilePic', 'studentPhoto', 'profile_image', 'avatar']);
+  const semester = '';
+  const photo = getField(['photoUrl', 'photo', 'image', 'profilePic', 'studentPhoto', 'profile_image', 'avatar', 'studentProfilePic', 'studentImage', 'profileImage', 'picture']);
 
   const downloadPDF = async () => {
     if (!formRef.current) return;
@@ -215,7 +215,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
             {localPhoto ? (
               <img src={localPhoto} alt="Student" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }} />
             ) : photo ? (
-              <img src={photo} alt="Student" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }} crossOrigin="anonymous" />
+              <img src={photo} alt="Student" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }} />
             ) : null}
             <label style={{ cursor: 'pointer', display: 'block', width: '100%', height: '100%', margin: 0, position: 'relative', zIndex: 1, backgroundColor: (localPhoto || photo) ? 'transparent' : 'white' }}>
               <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />

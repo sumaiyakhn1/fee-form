@@ -106,19 +106,23 @@ function App() {
   return (
     <div className={`login-container ${duesData && duesData.dueAmount === 0 ? 'expanded' : ''}`}>
       <div className="login-header">
-        <h1 className="login-title">Welcome Back</h1>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1.5rem', gap: '15px' }}>
+          <img src="/rksd.jpg" alt="RKSD College" style={{ height: '70px', objectFit: 'contain' }} />
+          <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--primary-color)', fontWeight: 'bold' }}>R.K.S.D. COLLEGE, KAITHAL</h2>
+        </div>
+        <h1 className="login-title">Welcome</h1>
         <p className="login-subtitle">Please sign in to your account to continue</p>
       </div>
 
       {!duesData ? (
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label" htmlFor="regNo">Registration Number / Student ID</label>
+            <label className="form-label" htmlFor="regNo">College Roll No</label>
             <input
               id="regNo"
               type="text"
               className="form-input"
-              placeholder="Enter registration number"
+              placeholder="Enter college roll no"
               value={regNo}
               onChange={(e) => setRegNo(e.target.value)}
               required
@@ -174,6 +178,12 @@ function App() {
           {message.text}
         </div>
       )}
+
+      {/* Powered by Okie Dokie */}
+      <div style={{ marginTop: '2rem', textAlign: 'center', paddingTop: '1rem', borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+        <p style={{ fontSize: '12px', color: '#888', marginBottom: '8px' }}>Powered by</p>
+        <img src="/okiedokie.png" alt="Okie Dokie" style={{ height: '40px', objectFit: 'contain' }} />
+      </div>
     </div>
   );
 }
