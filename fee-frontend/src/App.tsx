@@ -96,28 +96,43 @@ function App() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (regNo) {
       setIsLoading(true);
-      setMessage({ text: 'Redirecting...', type: 'success' });
+      setMessage({ text: 'Redirecting to external browser...', type: 'success' });
 
       const url = new URL(window.location.href);
       url.searchParams.set('regNo', regNo);
       const targetUrl = url.toString();
 
-      // Always escape to external browser
       if (/android/i.test(navigator.userAgent)) {
+        // Android: Use intent to force open Chrome
         const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
         const scheme = url.protocol.replace(':', '');
         const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=${scheme};package=com.android.chrome;end;`;
         window.location.href = intentUrl;
         
-        // No window.open fallback here because WebViews treat window.open as a local navigation, causing the "looping" bug.
+        // If they are stuck in the webview, show alert
+        setTimeout(() => {
+          setIsLoading(false);
+          setMessage({ text: 'Tap the 3 dots (...) to Open in Chrome if nothing happened.', type: 'error' });
+        }, 2000);
       } else {
-        const newWin = window.open(targetUrl, '_blank', 'noopener,noreferrer');
-        if (!newWin) {
-          alert('Popup blocked! Please tap the menu (3 dots or share icon) and select "Open in Safari" or "Open in System Browser" to continue safely.');
-        }
+        // iOS/Desktop: Use a simulated link click which bypasses popup blockers better than window.open
+        const link = document.createElement('a');
+        link.href = targetUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Fallback message for stubborn iOS WebViews
+        setTimeout(() => {
+          setIsLoading(false);
+          setMessage({ text: 'Tap the 3 dots or Share icon and select "Open in Safari" to continue.', type: 'error' });
+        }, 2000);
       }
     }
   };
@@ -134,7 +149,7 @@ function App() {
       </div>
 
       {!duesData ? (
-        <div>
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label" htmlFor="regNo">College Roll No</label>
             <input
@@ -150,10 +165,9 @@ function App() {
             />
           </div>
           <button 
-            type="button" 
+            type="submit" 
             className="form-button"
             disabled={isLoading || !regNo}
-            onClick={handleSubmit}
           >
             {isLoading ? (
               <>
@@ -164,7 +178,7 @@ function App() {
               'Enter Dashboard'
             )}
           </button>
-        </div>
+        </form>
       ) : (
         <div style={{ marginTop: '2rem', textAlign: 'left' }}>
           <h3 style={{ marginBottom: '1rem', color: 'var(--text-main)' }}>Dues Dashboard</h3>

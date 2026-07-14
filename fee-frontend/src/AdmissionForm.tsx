@@ -99,7 +99,11 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       const scheme = url.protocol.replace(':', '');
       const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=${scheme};package=com.android.chrome;end;`;
       window.location.href = intentUrl;
-      setIsDownloading(false);
+      
+      setTimeout(() => {
+        setIsDownloading(false);
+        alert('If nothing happened, please tap the 3 dots (...) menu at the top right and select "Open in Chrome" or "Open in Browser" to print safely.');
+      }, 1500);
     } else {
       const newWin = window.open(targetUrl, '_blank', 'noopener,noreferrer');
       if (!newWin) {
