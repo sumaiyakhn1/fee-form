@@ -8,7 +8,6 @@ interface AdmissionFormProps {
 
 export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const formRef = useRef<HTMLDivElement>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [localPhoto, setLocalPhoto] = useState<string | null>(null);
 
@@ -80,11 +79,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const photo = getField(['photoUrl', 'photo', 'image', 'profilePic', 'studentPhoto', 'profile_image', 'avatar', 'studentProfilePic', 'studentImage', 'profileImage', 'picture']);
 
   const printForm = async () => {
-    setIsDownloading(true);
-    setTimeout(() => {
-      window.print();
-      setIsDownloading(false);
-    }, 500);
+    window.print();
   };
 
   if (generatedImage) {
@@ -294,9 +289,8 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
           type="button" 
           className="form-button" 
           onClick={printForm} 
-          disabled={isDownloading}
         >
-          {isDownloading ? 'Preparing Print...' : 'Print Form'}
+          Print Form
         </button>
       </div>
     </div>
