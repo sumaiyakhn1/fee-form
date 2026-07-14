@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import './AdmissionForm.css';
 
@@ -9,7 +8,7 @@ interface AdmissionFormProps {
 
 export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const formRef = useRef<HTMLDivElement>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [localPhoto, setLocalPhoto] = useState<string | null>(null);
 
