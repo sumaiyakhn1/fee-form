@@ -147,15 +147,14 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
             <h2>(2026-27)</h2>
           </div>
           <div className="photo-placeholder" style={{ position: 'relative', overflow: 'hidden', backgroundColor: 'transparent' }}>
-            {localPhoto ? (
-              <img src={localPhoto} alt="Student" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }} />
-            ) : photo ? (
-              <img src={photo} alt="Student" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }} />
-            ) : null}
-            <label style={{ cursor: 'pointer', display: 'block', width: '100%', height: '100%', margin: 0, position: 'relative', zIndex: 1, backgroundColor: (localPhoto || photo) ? 'transparent' : 'white' }}>
+            <label style={{ cursor: 'pointer', display: 'block', width: '100%', height: '100%', margin: 0 }}>
               <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
-              {!localPhoto && !photo && (
-                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+              {localPhoto ? (
+                <img src={localPhoto} alt="Student" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              ) : photo ? (
+                <img src={photo} alt="Student" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              ) : (
+                <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: 'white' }}>
                   Affix Passport<br/>Size Photo
                   <small style={{ marginTop: '5px', fontSize: '10px', color: '#666' }}>(Click to attach)</small>
                 </span>
