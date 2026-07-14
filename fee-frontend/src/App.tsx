@@ -105,22 +105,24 @@ function App() {
       const url = new URL(window.location.href);
       url.searchParams.set('regNo', regNo);
       const targetUrl = url.toString();
+      const isHttps = url.protocol === 'https:';
 
-      setTimeout(() => {
-        // Always escape to external browser
-        if (/android/i.test(navigator.userAgent)) {
-          const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
-          const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.android.chrome;end;`;
-          window.location.href = intentUrl;
-          
-          // Fallback if intent fails
-          setTimeout(() => {
-            window.location.href = targetUrl;
-          }, 1500);
-        } else {
-          window.location.href = targetUrl;
-        }
-      }, 800); // Give user time to see the loading screen
+      // Always escape to external browser
+      if (/android/i.test(navigator.userAgent)) {
+        const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
+        const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=${isHttps ? 'https' : 'http'};package=com.android.chrome;end;`;
+        
+        // Try intent first for Android
+        window.location.href = intentUrl;
+        
+        // Fallback to window.open if intent fails
+        setTimeout(() => {
+          window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        }, 500);
+      } else {
+        // For iOS and Desktop, window.open must happen synchronously to bypass popup blockers
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      }
     }
   };
 
