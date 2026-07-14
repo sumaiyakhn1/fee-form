@@ -34,7 +34,8 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
 
   const name = getField(['name', 'studentName', 'firstName']);
   const fatherName = getField(['fatherName', 'fathersName', 'parentName']);
-  const motherName = getField(['motherName', 'mothersName']);
+  const motherNameRaw = getField(['motherName', 'mothersName']);
+  const motherName = motherNameRaw?.toLowerCase() === 'na' ? '' : motherNameRaw;
   
   let dob = getField(['dob', 'dateOfBirth']);
   if (dob) {
@@ -48,7 +49,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const collegeRollNo = getField(['regNo']);
   const uniRollNo = '';
   const kuRegNo = '';
-  const abcId = getField(['abcId', 'abcIdNo']);
+  const abcId = getField(['abcId', 'abcIdNo', 'apaarId', 'apaar_id']);
   const familyId = getField(['familyId', 'ppp']);
   const category = getField(['socialCategory', 'category', 'casteCategory']);
   const minority = getField(['religion', 'minority']);
@@ -69,72 +70,9 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const photo = getField(['photoUrl', 'photo', 'image', 'profilePic', 'studentPhoto', 'profile_image', 'avatar', 'studentProfilePic', 'studentImage', 'profileImage', 'picture']);
 
   const downloadPDF = async () => {
-    if (!formRef.current) return;
-    
-    try {
-      setIsDownloading(true);
-
-      // Force update DOM attributes so html2canvas captures current input values
-      const inputs = formRef.current.querySelectorAll('input[type="text"]');
-      inputs.forEach((input: any) => {
-        input.setAttribute('value', input.value);
-      });
-
-      const canvas = await html2canvas(formRef.current, {
-        scale: window.innerWidth < 768 ? 1.5 : 2, // slightly lower scale on mobile to prevent crashes
-        useCORS: true,
-        windowWidth: 794, // Force desktop width so media queries don't trigger mobile layout
-        onclone: (clonedDoc) => {
-          // Force the cloned print area to strictly match A4 paper dimensions (96 DPI: 794x1123)
-          const el = clonedDoc.querySelector('.print-area') as HTMLElement;
-          if (el) {
-            el.style.width = '794px';
-            el.style.minHeight = '1123px';
-            el.style.padding = '40px';
-            el.style.backgroundColor = 'white';
-            el.style.margin = '0';
-            el.style.boxSizing = 'border-box';
-            
-            // Ensure inputs look correct
-            const inputs = el.querySelectorAll('input[type="text"]');
-            inputs.forEach((input: any) => {
-               input.style.border = 'none';
-               input.style.borderBottom = '1px dotted black';
-               input.style.backgroundColor = 'transparent';
-            });
-          }
-        }
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      
-      if (isMobile) {
-        // WebView workaround: Just display the image on screen and offer download
-        setGeneratedImage(imgData);
-      } else {
-        // Desktop browsers handle PDF generation perfectly
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
-        });
-        
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        const studentId = getField(['regNo', 'id', '_id']);
-        const fileName = `Admission_Form_${collegeRollNo || studentId || 'Student'}.pdf`;
-        pdf.save(fileName);
-      }
-
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
-    } finally {
-      setIsDownloading(false);
-    }
+    setTimeout(() => {
+      window.print();
+    }, 100);
   };
 
   if (generatedImage) {
@@ -240,8 +178,8 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
         </div>
 
         <div className="form-row">
-          <span style={{ display: 'flex', flex: 1.5, alignItems: 'flex-end' }}><strong>ABC ID No.</strong> <input type="text" className="editable-input" defaultValue={abcId} /></span>
-          <span className="small-text" style={{ flex: 0.5, textAlign: 'center' }}>(Only for 2nd Year Students)</span>
+          <span style={{ display: 'flex', flex: 1.5, alignItems: 'flex-end' }}><strong>APAAR ID No.</strong> <input type="text" className="editable-input" defaultValue={abcId} /></span>
+          <span className="small-text" style={{ flex: 0.5, textAlign: 'center' }}>(Only for 2nd & 3rd Year Students)</span>
           <span style={{ display: 'flex', flex: 1.5, alignItems: 'flex-end' }}><strong>Name</strong> <input type="text" className="editable-input" defaultValue={name} /></span>
         </div>
 
