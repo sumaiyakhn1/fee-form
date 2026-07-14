@@ -99,23 +99,28 @@ function App() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (regNo) {
+      setIsLoading(true);
+      setMessage({ text: 'Redirecting to secure browser...', type: 'success' });
+
       const url = new URL(window.location.href);
       url.searchParams.set('regNo', regNo);
       const targetUrl = url.toString();
 
-      // Always escape to external browser BEFORE entering the dashboard
-      if (/android/i.test(navigator.userAgent)) {
-        const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
-        const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.android.chrome;end;`;
-        window.location.href = intentUrl;
-        
-        // Fallback if intent fails
-        setTimeout(() => {
-          window.open(targetUrl, '_blank', 'noopener,noreferrer');
-        }, 1000);
-      } else {
-        window.open(targetUrl, '_blank', 'noopener,noreferrer');
-      }
+      setTimeout(() => {
+        // Always escape to external browser
+        if (/android/i.test(navigator.userAgent)) {
+          const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
+          const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.android.chrome;end;`;
+          window.location.href = intentUrl;
+          
+          // Fallback if intent fails
+          setTimeout(() => {
+            window.location.href = targetUrl;
+          }, 1500);
+        } else {
+          window.location.href = targetUrl;
+        }
+      }, 800); // Give user time to see the loading screen
     }
   };
 

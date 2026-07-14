@@ -12,17 +12,6 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [localPhoto, setLocalPhoto] = useState<string | null>(null);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('autoPrint') === 'true') {
-      // Remove autoPrint from URL so it doesn't print repeatedly on refresh
-      window.history.replaceState({}, '', window.location.pathname + '?regNo=' + params.get('regNo'));
-      setTimeout(() => {
-        window.print();
-      }, 1500); // Give images a moment to load in the new browser tab
-    }
-  }, []);
-
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -80,24 +69,9 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const photo = getField(['photoUrl', 'photo', 'image', 'profilePic', 'studentPhoto', 'profile_image', 'avatar', 'studentProfilePic', 'studentImage', 'profileImage', 'picture']);
 
   const downloadPDF = async () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('autoPrint', 'true');
-    const targetUrl = url.toString();
-
-    // Check if device is Android to force open external Chrome via Intent (bypasses in-app WebViews)
-    if (/android/i.test(navigator.userAgent)) {
-      const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
-      const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.android.chrome;end;`;
-      window.location.href = intentUrl;
-      
-      // Fallback if Chrome intent fails
-      setTimeout(() => {
-        window.open(targetUrl, '_blank', 'noopener,noreferrer');
-      }, 1000);
-    } else {
-      // For iOS and desktop, _blank typically escapes the WebView or opens a new tab
-      window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    }
+    setTimeout(() => {
+      window.print();
+    }, 100);
   };
 
   if (generatedImage) {
@@ -303,9 +277,6 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       </div>
 
       <div className="print-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-        <button type="button" className="form-button" onClick={() => window.print()} disabled={isDownloading}>
-          Print Form
-        </button>
         <button 
           type="button"
           className="form-button" 
@@ -313,7 +284,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
           disabled={isDownloading}
           style={{ background: 'var(--success-color)' }}
         >
-          {isDownloading ? 'Generating PDF...' : 'Download PDF'}
+          {isDownloading ? 'Downloading...' : 'Download as PDF'}
         </button>
       </div>
     </div>
