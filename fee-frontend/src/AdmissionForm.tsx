@@ -110,10 +110,8 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       
       if (isMobile) {
-        // WebView workaround: Just display the image on screen so they can long-press to save it
+        // WebView workaround: Just display the image on screen and offer download
         setGeneratedImage(imgData);
-        // Automatically pop up the print interface as a convenience
-        setTimeout(() => window.print(), 500);
       } else {
         // Desktop browsers handle PDF generation perfectly
         const pdf = new jsPDF({
@@ -144,21 +142,21 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
         <div className="admission-form-container">
         
         <div style={{ textAlign: 'center', padding: '1rem', background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ color: 'var(--primary-color)', marginBottom: '0.5rem' }}>✅ Form Ready!</h2>
-          <p style={{ marginBottom: '0.5rem', color: '#e63946', fontWeight: 'bold', fontSize: '1.1rem' }}>
-            📱 App Restrictions Detected!
-          </p>
-          <p style={{ marginBottom: '1.5rem', color: '#333', fontSize: '0.95rem' }}>
-            Your student app is blocking background downloads. You can <strong>take a screenshot</strong> of the form below, OR use the print interface to save as PDF.
-          </p>
+          <h2 style={{ color: 'var(--primary-color)', marginBottom: '1.5rem' }}>✅ Form Ready!</h2>
 
           <button 
             type="button"
             className="form-button"
-            onClick={() => window.print()}
+            onClick={() => {
+              const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+              const pdfWidth = pdf.internal.pageSize.getWidth();
+              const pdfHeight = pdf.internal.pageSize.getHeight();
+              pdf.addImage(generatedImage, 'PNG', 0, 0, pdfWidth, pdfHeight);
+              pdf.save(`Admission_Form_${collegeRollNo || 'Student'}.pdf`);
+            }}
             style={{ marginBottom: '1rem', backgroundColor: '#10b981', maxWidth: '300px', margin: '0 auto 1rem auto', display: 'block' }}
           >
-            🖨️ Download PDF (via Print)
+            🖨️ Download PDF
           </button>
 
           <button 
@@ -166,11 +164,11 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
             className="form-button"
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
-              alert('Link copied! Open Chrome or Safari and paste this link to download your form normally.');
+              alert('Link copied!');
             }}
             style={{ marginBottom: '2rem', backgroundColor: '#3b82f6', maxWidth: '300px', margin: '0 auto 2rem auto', display: 'block' }}
           >
-            📋 Copy Link for Chrome/Safari
+            📋 Copy URL
           </button>
 
           <div style={{ border: '2px solid var(--primary-color)', padding: '5px', display: 'inline-block', borderRadius: '8px', maxWidth: '100%' }}>
