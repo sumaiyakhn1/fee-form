@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import './AdmissionForm.css';
 
@@ -11,6 +11,17 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const [isDownloading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [localPhoto, setLocalPhoto] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('autoPrint') === 'true') {
+      // Remove autoPrint from URL so it doesn't print repeatedly on refresh
+      window.history.replaceState({}, '', window.location.pathname + '?regNo=' + params.get('regNo'));
+      setTimeout(() => {
+        window.print();
+      }, 1500); // Give images a moment to load in the new browser tab
+    }
+  }, []);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,9 +80,24 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const photo = getField(['photoUrl', 'photo', 'image', 'profilePic', 'studentPhoto', 'profile_image', 'avatar', 'studentProfilePic', 'studentImage', 'profileImage', 'picture']);
 
   const downloadPDF = async () => {
-    setTimeout(() => {
-      window.print();
-    }, 100);
+    const url = new URL(window.location.href);
+    url.searchParams.set('autoPrint', 'true');
+    const targetUrl = url.toString();
+
+    // Check if device is Android to force open external Chrome via Intent (bypasses in-app WebViews)
+    if (/android/i.test(navigator.userAgent)) {
+      const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
+      const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.android.chrome;end;`;
+      window.location.href = intentUrl;
+      
+      // Fallback if Chrome intent fails
+      setTimeout(() => {
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      }, 1000);
+    } else {
+      // For iOS and desktop, _blank typically escapes the WebView or opens a new tab
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   if (generatedImage) {
