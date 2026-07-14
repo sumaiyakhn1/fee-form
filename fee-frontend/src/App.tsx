@@ -96,31 +96,25 @@ function App() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (regNo) {
       setIsLoading(true);
-      setMessage({ text: 'Redirecting to secure browser...', type: 'success' });
+      setMessage({ text: 'Redirecting...', type: 'success' });
 
       const url = new URL(window.location.href);
       url.searchParams.set('regNo', regNo);
       const targetUrl = url.toString();
-      const isHttps = url.protocol === 'https:';
 
-      // Always escape to external browser
+      // The exact logic that worked perfectly in AdmissionForm
       if (/android/i.test(navigator.userAgent)) {
         const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
-        const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=${isHttps ? 'https' : 'http'};package=com.android.chrome;end;`;
-        
-        // Try intent first for Android
+        const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.android.chrome;end;`;
         window.location.href = intentUrl;
         
-        // Fallback to window.open if intent fails
         setTimeout(() => {
           window.open(targetUrl, '_blank', 'noopener,noreferrer');
-        }, 500);
+        }, 1000);
       } else {
-        // For iOS and Desktop, window.open must happen synchronously to bypass popup blockers
         window.open(targetUrl, '_blank', 'noopener,noreferrer');
       }
     }
@@ -138,7 +132,7 @@ function App() {
       </div>
 
       {!duesData ? (
-        <form onSubmit={handleSubmit}>
+        <div>
           <div className="form-group">
             <label className="form-label" htmlFor="regNo">College Roll No</label>
             <input
@@ -148,14 +142,16 @@ function App() {
               placeholder="Enter college roll no"
               value={regNo}
               onChange={(e) => setRegNo(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(); }}
               required
               disabled={isLoading}
             />
           </div>
           <button 
-            type="submit" 
+            type="button" 
             className="form-button"
             disabled={isLoading || !regNo}
+            onClick={handleSubmit}
           >
             {isLoading ? (
               <>
@@ -166,7 +162,7 @@ function App() {
               'Enter Dashboard'
             )}
           </button>
-        </form>
+        </div>
       ) : (
         <div style={{ marginTop: '2rem', textAlign: 'left' }}>
           <h3 style={{ marginBottom: '1rem', color: 'var(--text-main)' }}>Dues Dashboard</h3>
