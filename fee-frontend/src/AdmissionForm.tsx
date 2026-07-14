@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import './AdmissionForm.css';
 
@@ -8,9 +8,20 @@ interface AdmissionFormProps {
 
 export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const formRef = useRef<HTMLDivElement>(null);
-  const [isDownloading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [localPhoto, setLocalPhoto] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('autoPrint') === 'true') {
+      // Remove autoPrint from URL so it doesn't print repeatedly on refresh
+      window.history.replaceState({}, '', window.location.pathname + '?regNo=' + params.get('regNo'));
+      setTimeout(() => {
+        window.print();
+      }, 1500); // Give images a moment to load in the new browser tab
+    }
+  }, []);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,10 +79,34 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const semester = '';
   const photo = getField(['photoUrl', 'photo', 'image', 'profilePic', 'studentPhoto', 'profile_image', 'avatar', 'studentProfilePic', 'studentImage', 'profileImage', 'picture']);
 
-  const downloadPDF = async () => {
-    setTimeout(() => {
+  const printForm = async () => {
+    setIsDownloading(true);
+    const url = new URL(window.location.href);
+    
+    // If we are already in the autoPrint tab, just print directly
+    if (url.searchParams.get('autoPrint') === 'true' || !(/android/i.test(navigator.userAgent) || /wv|instagram|fbav|fban|line|snapchat/i.test(navigator.userAgent))) {
       window.print();
-    }, 100);
+      setIsDownloading(false);
+      return;
+    }
+
+    url.searchParams.set('autoPrint', 'true');
+    const targetUrl = url.toString();
+
+    // Escape to external browser
+    if (/android/i.test(navigator.userAgent)) {
+      const urlWithoutScheme = targetUrl.replace(/^https?:\/\//i, '');
+      const intentUrl = `intent://${urlWithoutScheme}#Intent;scheme=https;package=com.android.chrome;end;`;
+      window.location.href = intentUrl;
+      
+      setTimeout(() => {
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        setIsDownloading(false);
+      }, 1000);
+    } else {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      setIsDownloading(false);
+    }
   };
 
   if (generatedImage) {
@@ -278,13 +313,12 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
 
       <div className="print-actions" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
         <button 
-          type="button"
+          type="button" 
           className="form-button" 
-          onClick={downloadPDF} 
+          onClick={printForm} 
           disabled={isDownloading}
-          style={{ background: 'var(--success-color)' }}
         >
-          {isDownloading ? 'Downloading...' : 'Download as PDF'}
+          {isDownloading ? 'Preparing Print...' : 'Print Form'}
         </button>
       </div>
     </div>
