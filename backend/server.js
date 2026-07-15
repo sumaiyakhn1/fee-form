@@ -38,7 +38,7 @@ app.post('/api/log-download', async (req, res) => {
         res.status(201).json({ message: 'Download logged successfully', id: savedDownload._id });
     } catch (err) {
         console.error('Error inserting into database:', err.message);
-        res.status(500).json({ error: 'Failed to log download' });
+        res.status(500).json({ error: 'Failed to log download', details: err.message });
     }
 });
 
@@ -52,7 +52,7 @@ app.get('/api/downloads', async (req, res) => {
         });
     } catch (err) {
         console.error('Error fetching logs:', err.message);
-        res.status(500).json({ error: 'Failed to fetch logs' });
+        res.status(500).json({ error: 'Failed to fetch logs', details: err.message });
     }
 });
 
