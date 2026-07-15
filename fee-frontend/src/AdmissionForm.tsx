@@ -19,7 +19,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
       window.history.replaceState({}, '', window.location.pathname + (regNo ? '?regNo=' + regNo : ''));
       setTimeout(() => {
         if (regNo) {
-          fetch('http://localhost:3001/api/log-download', {
+          fetch('https://fee-form.onrender.com/api/log-download', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ regNo })
@@ -89,7 +89,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const logDownload = async () => {
     if (!collegeRollNo) return;
     try {
-      await fetch('http://localhost:3001/api/log-download', {
+      await fetch('https://fee-form.onrender.com/api/log-download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ regNo: collegeRollNo })
