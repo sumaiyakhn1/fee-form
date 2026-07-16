@@ -169,10 +169,52 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
 
   return (
     <div className="admission-form-container">
-      <div className="print-area" ref={formRef} style={{ backgroundColor: 'white', padding: '20px' }}>
+      <div className="print-area" ref={formRef} style={{ backgroundColor: 'white', padding: '20px', position: 'relative' }}>
+
+        {/* WATERMARKS */}
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          pointerEvents: 'none',
+          zIndex: 0,
+          overflow: 'hidden'
+        }}>
+          {/* Top Left */}
+          <div style={{
+            position: 'absolute', top: '25%', left: '25%',
+            transform: 'translate(-50%, -50%) rotate(-45deg)',
+            fontSize: '5rem', fontWeight: 'bold',
+            color: 'rgba(0, 0, 0, 0.04)', whiteSpace: 'nowrap',
+            textAlign: 'center', userSelect: 'none'
+          }}>
+            RKSD<br />{collegeRollNo}
+          </div>
+          
+          {/* Center */}
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%) rotate(-45deg)',
+            fontSize: '5rem', fontWeight: 'bold',
+            color: 'rgba(0, 0, 0, 0.04)', whiteSpace: 'nowrap',
+            textAlign: 'center', userSelect: 'none'
+          }}>
+            RKSD<br />{collegeRollNo}
+          </div>
+
+          {/* Bottom Right */}
+          <div style={{
+            position: 'absolute', top: '75%', left: '75%',
+            transform: 'translate(-50%, -50%) rotate(-45deg)',
+            fontSize: '5rem', fontWeight: 'bold',
+            color: 'rgba(0, 0, 0, 0.04)', whiteSpace: 'nowrap',
+            textAlign: 'center', userSelect: 'none'
+          }}>
+            RKSD<br />{collegeRollNo}
+          </div>
+        </div>
 
         {/* HEADER */}
-        <div className="form-header">
+        <div className="form-header" style={{ position: 'relative', zIndex: 1 }}>
           <div className="header-text">
             <h1>R.K.S.D. COLLEGE, KAITHAL</h1>
             <h2>(2026-27)</h2>
