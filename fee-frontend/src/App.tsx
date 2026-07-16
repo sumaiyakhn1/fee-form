@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import AdmissionForm from './AdmissionForm';
 
 function App() {
+  const isAdmin = window.location.pathname === '/admin';
+
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'error' | 'success' } | null>(null);
   const [duesData, setDuesData] = useState<any>(null);
@@ -82,6 +84,8 @@ function App() {
       
       if (duesJson.dueAmount === 0) {
         setMessage({ text: 'No Dues! You are cleared.', type: 'success' });
+      } else if (isAdmin) {
+        setMessage({ text: `You have pending dues, but granting access (Admin).`, type: 'success' });
       } else {
         setMessage({ text: `You have pending dues.`, type: 'error' });
       }
@@ -138,13 +142,15 @@ function App() {
   };
 
   return (
-    <div className={`login-container ${duesData && duesData.dueAmount === 0 ? 'expanded' : ''}`}>
+    <div className={`login-container ${duesData && (duesData.dueAmount === 0 || isAdmin) ? 'expanded' : ''}`}>
       <div className="login-header">
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1.5rem', gap: '15px' }}>
           <img src="/rksd.jpg" alt="RKSD College" style={{ height: '70px', objectFit: 'contain' }} />
           <h2 style={{ margin: 0, fontSize: '20px', color: 'var(--primary-color)', fontWeight: 'bold' }}>R.K.S.D. COLLEGE, KAITHAL</h2>
         </div>
-        <h1 className="login-title">Welcome</h1>
+        <h1 className="login-title" style={isAdmin ? { color: 'red' } : {}}>
+          {isAdmin ? 'Admin Panel' : 'Welcome'}
+        </h1>
         <p className="login-subtitle">Please sign in to your account to continue</p>
       </div>
 
@@ -190,10 +196,10 @@ function App() {
             </div>
           )}
 
-          {duesData.dueAmount === 0 ? (
+          {duesData.dueAmount === 0 || isAdmin ? (
             <div style={{ marginTop: '2rem' }}>
-              <div style={{ textAlign: 'center', fontWeight: 'bold', color: 'var(--success-color)', marginBottom: '1rem' }}>
-                ✅ You have no pending dues!
+              <div style={{ textAlign: 'center', fontWeight: 'bold', color: duesData.dueAmount === 0 ? 'var(--success-color)' : 'var(--error-color)', marginBottom: '1rem' }}>
+                {duesData.dueAmount === 0 ? '✅ You have no pending dues!' : `⚠️ You have pending dues (₹${duesData.dueAmount}), but granting access as Admin.`}
               </div>
               
               {new URLSearchParams(window.location.search).get('viewForm') === 'true' ? (
@@ -226,7 +232,7 @@ function App() {
                           className="form-button"
                           style={{ display: 'inline-block', textDecoration: 'none', boxSizing: 'border-box', lineHeight: 'normal' }}
                         >
-                          🌐 Open in External Browser
+                          🌐 Open
                         </a>
                       );
                     })()}
@@ -243,21 +249,7 @@ function App() {
                         alert('URL Copied! Please paste it in Chrome or Safari to continue.');
                       }}
                     >
-                      📋 Copy URL to open manually
-                    </button>
-                    
-                    <button 
-                      type="button"
-                      className="form-button"
-                      style={{ background: 'transparent', border: 'none', color: '#888', textDecoration: 'underline', fontSize: '0.8rem', marginTop: '0.5rem' }}
-                      onClick={() => {
-                        const targetUrl = new URL(window.location.href);
-                        targetUrl.searchParams.set('regNo', regNo);
-                        targetUrl.searchParams.set('viewForm', 'true');
-                        window.location.href = targetUrl.toString();
-                      }}
-                    >
-                      Continue here anyway (Not Recommended)
+                      📋 Copy URL
                     </button>
                   </div>
                 </div>
