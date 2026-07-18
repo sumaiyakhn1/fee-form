@@ -45,7 +45,7 @@ function App() {
       setMessage({ text: 'Login successful! Checking dues...', type: 'success' });
       
       // Step 1: Fetch student details by regNo to get the actual student ID
-      const studentResponse = await fetch(`https://fee2-api.odpay.in/api/view/student?entity=6487ec9e91f7297664a62ffc&session=2025-26%20Odd&regNo=${searchRegNo}`, {
+      const studentResponse = await fetch(`https://fee2-api.odpay.in/api/view/student?entity=6487ec9e91f7297664a62ffc&session=2026-27%20Odd&regNo=${searchRegNo}`, {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': token } : {})
