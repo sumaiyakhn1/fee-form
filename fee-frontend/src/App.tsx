@@ -44,8 +44,8 @@ function App() {
       
       setMessage({ text: 'Login successful! Checking dues...', type: 'success' });
       
-      // Step 1: Fetch student details by regNo to get the actual student ID
-      const studentResponse = await fetch(`https://fee2-api.odpay.in/api/view/student?entity=6487ec9e91f7297664a62ffc&session=2025-26%20Odd&regNo=${searchRegNo}`, {
+      // Step 1: Fetch student details by regNo for 2026-27 Odd (used for student details/admission form)
+      const studentResponse = await fetch(`https://fee2-api.odpay.in/api/view/student?entity=6487ec9e91f7297664a62ffc&session=2026-27%20Odd&regNo=${searchRegNo}`, {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': token } : {})
@@ -57,27 +57,47 @@ function App() {
         throw new Error(studentJson.message || 'Failed to fetch student details');
       }
 
-      // Extract the student ID (could be an array or single object)
+      // Extract the student details (could be an array or single object)
       const studentDataObj = Array.isArray(studentJson) ? studentJson[0] : studentJson;
       if (!studentDataObj || (!studentDataObj._id && !studentDataObj.id)) {
         throw new Error('Student not found for the given registration number');
       }
-      
-      const studentId = studentDataObj._id || studentDataObj.id;
       setStudentData(studentDataObj);
 
-      // Step 2: Fetch dues using the extracted student ID
-      const duesResponse = await fetch(`https://fee2-api.odpay.in/api/checkDues/student?id=${studentId}`, {
+      // Step 2: Fetch student details by regNo for 2025-26 Odd (used for checking dues)
+      const duesStudentResponse = await fetch(`https://fee2-api.odpay.in/api/view/student?entity=6487ec9e91f7297664a62ffc&session=2025-26%20Odd&regNo=${searchRegNo}`, {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': token } : {})
         }
       });
-      
-      const duesJson = await duesResponse.json().catch(() => ({}));
-      
-      if (!duesResponse.ok) {
-        throw new Error(duesJson.message || duesJson.error || 'Failed to check dues');
+
+      let duesJson: any = { dueAmount: 0 };
+
+      if (duesStudentResponse.ok) {
+        const duesStudentJson = await duesStudentResponse.json().catch(() => ({}));
+        const duesStudentDataObj = Array.isArray(duesStudentJson) ? duesStudentJson[0] : duesStudentJson;
+
+        if (duesStudentDataObj && (duesStudentDataObj._id || duesStudentDataObj.id)) {
+          const studentId = duesStudentDataObj._id || duesStudentDataObj.id;
+
+          // Step 3: Fetch dues using the extracted 2025-26 Odd student ID
+          const duesResponse = await fetch(`https://fee2-api.odpay.in/api/checkDues/student?id=${studentId}`, {
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': token } : {})
+            }
+          });
+          
+          duesJson = await duesResponse.json().catch(() => ({}));
+          
+          if (!duesResponse.ok) {
+            throw new Error(duesJson.message || duesJson.error || 'Failed to check dues');
+          }
+        }
+      } else if (duesStudentResponse.status !== 404) {
+        const duesStudentJson = await duesStudentResponse.json().catch(() => ({}));
+        throw new Error(duesStudentJson.message || 'Failed to fetch dues student details');
       }
 
       setDuesData(duesJson);
