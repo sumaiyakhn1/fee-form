@@ -65,7 +65,7 @@ export default function AdmissionForm({ studentData }: AdmissionFormProps) {
   const gender = getField(['gender', 'sex']);
   const collegeRollNo = getField(['regNo']);
   const uniRollNo = '';
-  const kuRegNo = '';
+  const kuRegNo = getField(['srn', 'srnNo', 'kukRegNo', 'kuRegNo']);
   const abcId = getField(['abcId', 'abcIdNo', 'apaarId', 'apaar_id']);
   const familyId = getField(['familyId', 'ppp']);
   const category = getField(['socialCategory', 'category', 'casteCategory']);
